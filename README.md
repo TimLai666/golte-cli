@@ -5,7 +5,7 @@ Golte CLI is a command-line tool for building and running [Golte](https://github
 ## Installation
 
 ```bash
-go get github.com/TimLai666/golte-cli
+go install github.com/TimLai666/golte-cli@latest
 ```
 
 ## Usage
