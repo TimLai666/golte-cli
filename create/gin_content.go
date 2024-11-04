@@ -1,6 +1,6 @@
 package create
 
-const ginContentTemplate = `package main
+const ginContentTemplate = `package router
 
 import (
 	"net/http"
@@ -11,7 +11,7 @@ import (
 	"github.com/nichady/golte"
 )
 
-func ginRouter() http.Handler {
+func GinRouter() http.Handler {
 	// Gin doesn't have a function to wrap middleware, so define our own
 	wrapMiddleware := func(middleware func(http.Handler) http.Handler) func(ctx *gin.Context) {
 		return func(ctx *gin.Context) {

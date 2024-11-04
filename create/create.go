@@ -26,11 +26,19 @@ func CreateProject(projectName string, templates embed.FS) {
 		log.Fatalf("Failed to copy template files: %v", err)
 	}
 
-	// put gin.go content
-	ginContent := strings.Replace(ginContentTemplate, "{{projectName}}", projectName, -1)
-	err = os.WriteFile(filepath.Join(projectPath, "gin.go"), []byte(ginContent), 0644)
+	// put main.go content
+	mainContent := strings.Replace(mainContentTemplate, "{{projectName}}", projectName, -1)
+	err = os.WriteFile(filepath.Join(projectPath, "main.go"), []byte(mainContent), 0644)
 	if err != nil {
-		log.Fatalf("Failed to write gin.go file: %v", err)
+		log.Fatalf("Failed to write main.go file: %v", err)
+	}
+
+	// put router.go content
+	os.MkdirAll(filepath.Join(projectPath, "router"), 0755)
+	ginContent := strings.Replace(ginContentTemplate, "{{projectName}}", projectName, -1)
+	err = os.WriteFile(filepath.Join(projectPath, "router", "router.go"), []byte(ginContent), 0644)
+	if err != nil {
+		log.Fatalf("Failed to write router.go file: %v", err)
 	}
 
 	// put package.json content
@@ -54,13 +62,14 @@ func CreateProject(projectName string, templates embed.FS) {
 		log.Fatalf("Failed to initialize npm: %v\n%s", err, output)
 	}
 
-	// Get Golte package
+	// Get Gin package
 	getCmd := exec.Command("go", "get", "-u", "github.com/gin-gonic/gin")
 	getCmd.Dir = projectPath
 	if output, err := getCmd.CombinedOutput(); err != nil {
 		log.Fatalf("Failed to get Gin package: %v\n%s", err, output)
 	}
 
+	// Get Golte package
 	getCmd = exec.Command("go", "get", "-u", "github.com/nichady/golte")
 	getCmd.Dir = projectPath
 	if output, err := getCmd.CombinedOutput(); err != nil {
