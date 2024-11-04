@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 )
 
@@ -22,7 +23,7 @@ func BuildProject(projectPath string, projectName string) {
 	} else {
 		execName = projectName
 	}
-	cmd = exec.Command("go", "build", "-o", execName, "main.go")
+	cmd = exec.Command("go", "build", "-o", filepath.Join("dist", execName), "main.go")
 	cmd.Dir = projectPath
 	if output, err := cmd.CombinedOutput(); err != nil {
 		log.Fatalf("Failed to build project: %v\n%s", err, output)

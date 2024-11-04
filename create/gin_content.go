@@ -5,7 +5,7 @@ const ginContentTemplate = `package router
 import (
 	"net/http"
 
-	"{{projectName}}/dist"
+	"{{projectName}}/build"
 
 	"github.com/gin-gonic/gin"
 	"github.com/nichady/golte"
@@ -35,7 +35,7 @@ func GinRouter() http.Handler {
 
 	r := gin.Default()
 	// register the main Golte middleware
-	r.Use(wrapMiddleware(dist.Golte))
+	r.Use(wrapMiddleware(build.Golte))
 
 	defineRoutes(r)
 
