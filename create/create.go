@@ -81,6 +81,12 @@ func CreateProject(projectName string, templates embed.FS) {
 	if output, err := npmInstallCmd.CombinedOutput(); err != nil {
 		log.Fatalf("Failed to install npm package: %v\n%s", err, output)
 	}
+
+	// npmInstallCmd = exec.Command("npm", "install", "svelte@latest")
+	// npmInstallCmd.Dir = projectPath
+	// if output, err := npmInstallCmd.CombinedOutput(); err != nil {
+	// 	log.Fatalf("Failed to install npm package: %v\n%s", err, output)
+	// }
 }
 
 func copyTemplateFiles(destPath, templatePath string, templates embed.FS) error {
