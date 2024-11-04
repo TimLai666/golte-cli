@@ -3,6 +3,8 @@ package main
 import (
 	"net/http"
 
+	"example/build"
+
 	"github.com/gin-gonic/gin"
 	"github.com/nichady/golte"
 )
@@ -30,6 +32,8 @@ func ginRouter() http.Handler {
 	// }
 
 	r := gin.Default()
+	// register the main Golte middleware
+	r.Use(build.Golte)
 
 	r.GET("/", page("pages/App"))
 

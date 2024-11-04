@@ -1,6 +1,6 @@
-<script lang="ts">
-    export let title: string;
-    let count = 0;
+<script>
+    export let title
+    let count = 0
 </script>
 
 <h1>{title}</h1>
