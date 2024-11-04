@@ -1,9 +1,11 @@
-package main
+package create
+
+const ginContentTemplate = `package main
 
 import (
 	"net/http"
 
-	"example/build"
+	"{{projectName}}/dist"
 
 	"github.com/gin-gonic/gin"
 	"github.com/nichady/golte"
@@ -11,17 +13,17 @@ import (
 
 func ginRouter() http.Handler {
 	// Gin doesn't have a function to wrap middleware, so define our own
-	// wrapMiddleware := func(middleware func(http.Handler) http.Handler) func(ctx *gin.Context) {
-	// 	return func(ctx *gin.Context) {
-	// 		middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	// 			ctx.Request = r
-	// 			ctx.Next()
-	// 		})).ServeHTTP(ctx.Writer, ctx.Request)
-	// 		if golte.GetRenderContext(ctx.Request) == nil {
-	// 			ctx.Abort()
-	// 		}
-	// 	}
-	// }
+	wrapMiddleware := func(middleware func(http.Handler) http.Handler) func(ctx *gin.Context) {
+		return func(ctx *gin.Context) {
+			middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				ctx.Request = r
+				ctx.Next()
+			})).ServeHTTP(ctx.Writer, ctx.Request)
+			if golte.GetRenderContext(ctx.Request) == nil {
+				ctx.Abort()
+			}
+		}
+	}
 
 	// since gin doesm't use stdlib-compatible signatures, we have to wrap them
 	page := func(c string) gin.HandlerFunc {
@@ -33,9 +35,10 @@ func ginRouter() http.Handler {
 
 	r := gin.Default()
 	// register the main Golte middleware
-	r.Use(build.Golte)
+	r.Use(wrapMiddleware(dist.Golte))
 
 	r.GET("/", page("pages/App"))
 
 	return r
 }
+`
