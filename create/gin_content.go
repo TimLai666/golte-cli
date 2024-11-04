@@ -26,9 +26,9 @@ func GinRouter() http.Handler {
 	}
 
 	// since gin doesm't use stdlib-compatible signatures, we have to wrap them
-	page := func(c string) gin.HandlerFunc {
-		return gin.WrapH(golte.Page(c))
-	}
+	// page := func(c string) gin.HandlerFunc {
+	// 	return gin.WrapH(golte.Page(c))
+	// }
 	// layout := func(c string) gin.HandlerFunc {
 	// 	return wrapMiddleware(golte.Layout(c))
 	// }
@@ -37,7 +37,7 @@ func GinRouter() http.Handler {
 	// register the main Golte middleware
 	r.Use(wrapMiddleware(dist.Golte))
 
-	r.GET("/", page("pages/App"))
+	defineRoutes(r)
 
 	return r
 }

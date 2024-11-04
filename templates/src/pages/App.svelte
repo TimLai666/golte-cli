@@ -1,12 +1,11 @@
 <script>
     export let title
-    let count = 0
+    import Counter from '../components/Counter.svelte'
 </script>
 
 <div class="container">
-    <h1>{title}</h1>
-    <span>{count}</span>
-    <button on:click={() => count++}>Increment</button>
+    <h1 class="title">{title}</h1>
+    <Counter />
 </div>
 
 <style>
@@ -16,27 +15,24 @@
         align-items: center;
         justify-content: center;
         height: 100vh;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     }
 
-    h1 {
-        font-size: 2rem;
+    .title {
+        font-size: 2.5rem;
+        color: #2c3e50;
+        margin-bottom: 2rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
     }
 
-    button {
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 0.5rem;
-        padding: 0.5rem 1rem;
-        cursor: pointer;
-        font-size: 1rem;
+    .title:hover {
+        transform: scale(1.05);
     }
 
-    button:hover {
-        background-color: #0056b3;
-    }
-
-    span {
-        font-size: 1.5rem;
+    @keyframes pop {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
     }
 </style>

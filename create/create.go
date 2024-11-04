@@ -34,7 +34,6 @@ func CreateProject(projectName string, templates embed.FS) {
 	}
 
 	// put router.go content
-	os.MkdirAll(filepath.Join(projectPath, "router"), 0755)
 	ginContent := strings.Replace(ginContentTemplate, "{{projectName}}", projectName, -1)
 	err = os.WriteFile(filepath.Join(projectPath, "router", "router.go"), []byte(ginContent), 0644)
 	if err != nil {
