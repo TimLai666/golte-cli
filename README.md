@@ -13,19 +13,19 @@ go install github.com/TimLai666/golte-cli@latest
 ### Initialize(create) a project
 
 ```bash
-golte new <project-name>
+golte-cli new <project-name>
 ```
 
 ### Build the project
 
 ```bash
-golte build
+golte-cli build
 ```
 
 ### Run the project
 
 ```bash
-golte run
+golte-cli run
 ```
 
 ### Notes
