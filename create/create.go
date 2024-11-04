@@ -73,8 +73,6 @@ func CreateProject(projectName string, templates embed.FS) {
 	if output, err := npmInstallCmd.CombinedOutput(); err != nil {
 		log.Fatalf("Failed to install npm package: %v\n%s", err, output)
 	}
-
-	fmt.Printf("Project '%s' created successfully!\n", projectName)
 }
 
 func copyTemplateFiles(destPath, templatePath string, templates embed.FS) error {

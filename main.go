@@ -4,9 +4,12 @@ import (
 	"embed"
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 
+	"github.com/TimLai666/golte-cli/build"
 	"github.com/TimLai666/golte-cli/create"
 )
 
@@ -38,6 +41,8 @@ var newCmd = &cobra.Command{
 		projectName := args[0]
 		fmt.Println("Creating project, please wait...")
 		create.CreateProject(projectName, templates)
+		build.BuildProject(projectName, projectName)
+		fmt.Printf("Project '%s' created successfully!\n", projectName)
 	},
 }
 
@@ -45,6 +50,12 @@ var buildCmd = &cobra.Command{
 	Use:   "build",
 	Short: "Build the project",
 	Run: func(cmd *cobra.Command, args []string) {
+		projectPath, err := os.Getwd()
+		if err != nil {
+			log.Fatalf("Failed to get current directory: %v", err)
+		}
+		projectName := filepath.Base(projectPath)
 		fmt.Println("Building the project...")
+		build.BuildProject(projectPath, projectName)
 	},
 }
