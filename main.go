@@ -26,6 +26,8 @@ func main() {
 	if err := rootCmd.Execute(); err != nil {
 		log.Fatalf("Error executing command: %v", err)
 	}
+
+	rootCmd.AddCommand(buildCmd)
 }
 
 var newCmd = &cobra.Command{
@@ -34,6 +36,15 @@ var newCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		projectName := args[0]
+		fmt.Println("Creating project, please wait...")
 		create.CreateProject(projectName, templates)
+	},
+}
+
+var buildCmd = &cobra.Command{
+	Use:   "build",
+	Short: "Build the project",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("Building the project...")
 	},
 }
