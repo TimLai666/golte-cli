@@ -27,3 +27,9 @@ golte build
 ```bash
 golte run
 ```
+
+### Notes
+
+- The executable file will be placed in the `dist` directory.
+- The executable file name will be the same as the project name.
+- On Windows, the executable file will have a `.exe` suffix.
