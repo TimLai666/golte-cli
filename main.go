@@ -27,7 +27,7 @@ func main() {
 		Use:   "golte-cli",
 		Short: "CLI tool for Golte projects",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("Welcome to golte-cli! Use 'golte-cli new <project-name>' to create a new project.")
+			fmt.Println("Welcome to golte-cli! Use `golte-cli help` to see available commands.")
 		},
 	}
 
@@ -35,6 +35,7 @@ func main() {
 	rootCmd.AddCommand(buildCmd)
 	rootCmd.AddCommand(runCmd)
 	rootCmd.AddCommand(devCmd)
+	rootCmd.HelpFunc()
 	if err := rootCmd.Execute(); err != nil {
 		log.Fatalf("Error executing command: %v", err)
 	}
@@ -97,7 +98,7 @@ var runCmd = &cobra.Command{
 
 var devCmd = &cobra.Command{
 	Use:   "dev",
-	Short: "Run the project and watch for changes",
+	Short: "Run the project and auto rebuild when changes",
 	Run: func(cmd *cobra.Command, args []string) {
 		projectPath, err := os.Getwd()
 		if err != nil {
