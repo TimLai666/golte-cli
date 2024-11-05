@@ -28,6 +28,19 @@ golte-cli build
 golte-cli run
 ```
 
+
+### Run the project and watch for changes
+
+```bash
+golte-cli dev
+```
+
+### Show help
+
+```bash
+golte-cli help
+```
+
 ### Notes
 
 - The executable file will be placed in the `dist` directory.
