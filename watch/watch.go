@@ -53,7 +53,7 @@ func WatchAndRebuild(projectPath, projectName string, startApp func(projectPath,
 			startAndMonitor()
 			// 等待進程退出信號
 			<-processExitChannel
-			log.Println("檢測到進程退出，5秒後重新啟動...")
+			// log.Println("檢測到進程退出，5秒後重新啟動...")
 			time.Sleep(5 * time.Second)
 		}
 	}()
