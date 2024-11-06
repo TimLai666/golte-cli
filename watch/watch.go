@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/TimLai666/golte-cli/build"
 	"github.com/fsnotify/fsnotify"
 )
 
@@ -17,46 +18,27 @@ func WatchAndRebuild(projectPath, projectName string, startApp func(projectPath,
 	// 創建一個通道用於進程管理
 	processChannel := make(chan *exec.Cmd, 1)
 
-	// 創建一個通道用於監控進程狀態
-	processExitChannel := make(chan struct{}, 1)
-
 	// 啟動應用程序
-	startAndMonitor := func() {
-		for {
-			cmd := startApp(projectPath, projectName)
-			if cmd == nil {
-				log.Println("啟動失敗，5秒後重試...")
-				time.Sleep(5 * time.Second)
-				continue // 直接重試，不使用 channel
-			}
-
-			// 成功啟動
-			processChannel <- cmd
-			go func() {
-				defer func() {
-					if r := recover(); r != nil {
-						log.Printf("監控進程時發生錯誤: %v", r)
-						processExitChannel <- struct{}{}
-					}
-				}()
-
-				cmd.Wait()
-				processExitChannel <- struct{}{}
-			}()
-			break
+	startAndMonitor := func() bool {
+		// 先進行構建
+		if !build.BuildProject(projectPath, projectName) {
+			log.Println("Build failed, waiting for next file change...")
+			return false
 		}
+
+		cmd := startApp(projectPath, projectName)
+		if cmd == nil {
+			log.Println("Failed to start app, waiting for next file change...")
+			return false
+		}
+
+		// 成功啟動
+		processChannel <- cmd
+		return true
 	}
 
-	// 啟動監控循環
-	go func() {
-		for {
-			startAndMonitor()
-			// 等待進程退出信號
-			<-processExitChannel
-			// log.Println("檢測到進程退出，5秒後重新啟動...")
-			time.Sleep(5 * time.Second)
-		}
-	}()
+	// 首次啟動
+	startAndMonitor()
 
 	fmt.Println("Running the project, and watching for changes...")
 
@@ -168,8 +150,7 @@ func WatchAndRebuild(projectPath, projectName string, startApp func(projectPath,
 				go func(eventName string) {
 					defer func() {
 						if r := recover(); r != nil {
-							log.Printf("處理文件變更時發生錯誤: %v", r)
-							processExitChannel <- struct{}{}
+							log.Printf("Failed to handle file change: %v", r)
 						}
 					}()
 
@@ -178,9 +159,14 @@ func WatchAndRebuild(projectPath, projectName string, startApp func(projectPath,
 					fmt.Println("Rebuilding project...")
 
 					// 停止當前進程
-					if currentCmd := <-processChannel; currentCmd != nil && currentCmd.Process != nil {
-						_ = currentCmd.Process.Kill()
-						_ = currentCmd.Wait()
+					select {
+					case currentCmd := <-processChannel:
+						if currentCmd != nil && currentCmd.Process != nil {
+							_ = currentCmd.Process.Kill()
+							_ = currentCmd.Wait()
+						}
+					default:
+						// 如果沒有正在運行的進程，直接繼續
 					}
 
 					// 重新啟動
@@ -192,7 +178,7 @@ func WatchAndRebuild(projectPath, projectName string, startApp func(projectPath,
 			if !ok {
 				continue
 			}
-			log.Printf("監視器錯誤: %v，繼續運行...", err)
+			log.Printf("Watcher error: %v, continuing...", err)
 		}
 	}
 }

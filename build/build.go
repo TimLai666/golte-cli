@@ -8,12 +8,13 @@ import (
 	"runtime"
 )
 
-func BuildProject(projectPath string, projectName string) {
+func BuildProject(projectPath string, projectName string) bool {
 	// build frontend
 	cmd := exec.Command("npx", "golte")
 	cmd.Dir = projectPath
 	if output, err := cmd.CombinedOutput(); err != nil {
-		log.Fatalf("Failed to build frontend: %v\n%s", err, output)
+		log.Printf("Failed to build frontend: %v\n%s", err, output)
+		return false
 	}
 
 	// build the project
@@ -26,6 +27,9 @@ func BuildProject(projectPath string, projectName string) {
 	cmd = exec.Command("go", "build", "-o", filepath.Join("dist", execName), "main.go")
 	cmd.Dir = projectPath
 	if output, err := cmd.CombinedOutput(); err != nil {
-		log.Fatalf("Failed to build project: %v\n%s", err, output)
+		log.Printf("Failed to build project: %v\n%s", err, output)
+		return false
 	}
+
+	return true
 }

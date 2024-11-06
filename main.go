@@ -39,7 +39,10 @@ func main() {
 
 // 定義啟動應用程序的函數
 var startApp = func(projectPath, projectName string) *exec.Cmd {
-	build.BuildProject(projectPath, projectName)
+	// 如果構建失敗，返回 nil
+	if !build.BuildProject(projectPath, projectName) {
+		return nil
+	}
 	cmd := exec.Command(filepath.Join("dist", projectName))
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
