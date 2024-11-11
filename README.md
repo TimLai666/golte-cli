@@ -16,6 +16,12 @@ go install github.com/TimLai666/golte-cli@latest
 golte-cli new <project-name>
 ```
 
+#### Create project in current directory
+
+```bash
+golte-cli new <project-name> --here
+```
+
 ### Build the project
 
 ```bash
