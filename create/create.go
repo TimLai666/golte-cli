@@ -11,18 +11,23 @@ import (
 	"strings"
 )
 
-func CreateProject(projectName string, templates embed.FS) {
-	projectPath := filepath.Join("./", projectName)
-	if _, err := os.Stat(projectPath); !os.IsNotExist(err) {
-		log.Fatalf("Project '%s' already exists", projectName)
+func CreateProject(projectName string, templates embed.FS, inCurrentDir bool) {
+	var projectPath string
+	if inCurrentDir {
+		projectPath = "."
+	} else {
+		projectPath = filepath.Join("./", projectName)
+		if _, err := os.Stat(projectPath); !os.IsNotExist(err) {
+			log.Fatalf("Project '%s' already exists", projectName)
+		}
+
+		err := os.MkdirAll(projectPath, 0755)
+		if err != nil {
+			log.Fatalf("Failed to create project directory: %v", err)
+		}
 	}
 
-	err := os.MkdirAll(projectPath, 0755)
-	if err != nil {
-		log.Fatalf("Failed to create project directory: %v", err)
-	}
-
-	err = copyTemplateFiles(projectPath, "templates", templates)
+	err := copyTemplateFiles(projectPath, "templates", templates)
 	if err != nil {
 		log.Fatalf("Failed to copy template files: %v", err)
 	}

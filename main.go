@@ -18,6 +18,11 @@ import (
 //go:embed templates/*
 var templates embed.FS
 
+func init() {
+	// 添加 here flag
+	newCmd.Flags().Bool("here", false, "Create project in current directory")
+}
+
 func main() {
 	var rootCmd = &cobra.Command{
 		Use:   "golte-cli",
@@ -60,7 +65,8 @@ var newCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		projectName := args[0]
 		fmt.Println("Creating project, please wait...")
-		create.CreateProject(projectName, templates)
+		inCurrentDir := cmd.Flag("here").Value.String() == "true"
+		create.CreateProject(projectName, templates, inCurrentDir)
 		build.BuildProject(projectName, projectName)
 		fmt.Printf("Project '%s' created successfully!\n", projectName)
 	},
