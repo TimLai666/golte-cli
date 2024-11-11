@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"strings"
 )
@@ -96,7 +97,7 @@ func copyTemplateFiles(destPath, templatePath string, templates embed.FS) error 
 	}
 
 	for _, entry := range entries {
-		sourcePath := filepath.Join(templatePath, entry.Name())
+		sourcePath := path.Join(templatePath, entry.Name())
 		destFilePath := filepath.Join(destPath, entry.Name())
 
 		if entry.IsDir() {
