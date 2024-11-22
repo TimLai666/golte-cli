@@ -1,5 +1,5 @@
-<script>
-    let count = 0
+<script lang="ts">
+    let count: number = 0
 
     // 添加動畫類別
     const addPopAnimation = () => {
