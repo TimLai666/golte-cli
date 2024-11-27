@@ -17,6 +17,14 @@ func BuildProject(projectPath string, projectName string) bool {
 		return false
 	}
 
+	// tidy go mod
+	cmd = exec.Command("go", "mod", "tidy")
+	cmd.Dir = projectPath
+	if output, err := cmd.CombinedOutput(); err != nil {
+		log.Printf("Failed to tidy go mod: %v\n%s", err, output)
+		return false
+	}
+
 	// build the project
 	var execName string
 	if runtime.GOOS == "windows" {
