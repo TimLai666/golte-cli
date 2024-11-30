@@ -8,19 +8,27 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
-	"time"
+	"sync/atomic"
 
 	"github.com/TimLai666/golte-cli/build"
 	"github.com/fsnotify/fsnotify"
 )
 
-func WatchAndRebuild(projectPath, projectName string, startApp func(projectPath, projectName string) *exec.Cmd) {
-	// 創建一個通道用於進程管理
-	processChannel := make(chan *exec.Cmd, 1)
+type watchPaths struct {
+	configPath string
+}
 
-	// 啟動應用程序
+func WatchAndRebuild(projectPath, projectName string, startApp func(projectPath, projectName string) *exec.Cmd) {
+	paths := &watchPaths{
+		configPath: filepath.Join(projectPath, "golte.config.ts"),
+	}
+
+	// 使用指標預先分配一個 cmd
+	var currentCmd *exec.Cmd
+	processChannel := make(chan *exec.Cmd, 1)
+	isRebuilding := atomic.Bool{}
+
 	startAndMonitor := func() bool {
-		// 先進行構建
 		if !build.BuildProject(projectPath, projectName) {
 			log.Println("Build failed, waiting for next file change...")
 			return false
@@ -32,7 +40,8 @@ func WatchAndRebuild(projectPath, projectName string, startApp func(projectPath,
 			return false
 		}
 
-		// 成功啟動
+		// 更新當前進程指標
+		currentCmd = cmd
 		processChannel <- cmd
 		return true
 	}
@@ -83,93 +92,85 @@ func WatchAndRebuild(projectPath, projectName string, startApp func(projectPath,
 		}
 	}
 
-	// 添加根目錄的特定文件
-	watcher.Add(filepath.Join(projectPath, "golte.config.ts"))
+	// 使用預計算的路徑
+	watcher.Add(paths.configPath)
 
-	debounceTimer := time.NewTimer(0)
-	debounceTimer.Stop()
+	// 預編譯正則表達式和預先計算的映射來加速檢查
+	ignorePaths := map[string]bool{
+		"node_modules": true,
+		"dist":         true,
+		".git":         true,
+		"build":        true,
+		".DS_Store":    true,
+	}
 
-	// 定檢查路徑是否應該被忽略的函數
+	validExts := map[string]bool{
+		".go":     true,
+		".svelte": true,
+		".css":    true,
+		".html":   true,
+		".ts":     true,
+		".js":     true,
+	}
+
+	ignoreExts := map[string]bool{
+		".tmp":  true,
+		".temp": true,
+		"~":     true,
+	}
+
+	// 優化 shouldIgnorePath 函數
 	shouldIgnorePath := func(path string) bool {
-		ignorePaths := []string{
-			"node_modules",
-			"dist",
-			".git",
-			"build",
-			"temp-",     // 臨時文件
-			".DS_Store", // macOS 系統文件
-		}
-
-		// 檢查路徑是否包含任何需要忽略的部分
-		for _, ignore := range ignorePaths {
-			if strings.Contains(path, ignore) {
+		// 直接檢查完整路徑名稱
+		for ignorePath := range ignorePaths {
+			if strings.Contains(path, ignorePath) {
 				return true
 			}
 		}
 
-		// 檢查文件擴展名
 		ext := filepath.Ext(path)
-		ignoreExts := []string{".tmp", ".temp", "~"}
-		for _, ignoreExt := range ignoreExts {
-			if strings.HasSuffix(ext, ignoreExt) {
-				return true
-			}
-		}
-
-		return false
+		return ignoreExts[ext]
 	}
 
 	for {
 		select {
 		case event, ok := <-watcher.Events:
-			if !ok {
-				continue
-			}
-
-			if shouldIgnorePath(event.Name) {
+			if !ok || shouldIgnorePath(event.Name) {
 				continue
 			}
 
 			if event.Op&(fsnotify.Write|fsnotify.Create|fsnotify.Remove|fsnotify.Rename) != 0 {
-				// 只處理特定文件類型
+				// 使用 map 加速副檔名檢查
 				ext := filepath.Ext(event.Name)
-				validExts := []string{".go", ".svelte", ".css", ".html", ".ts", ".js"}
-				isValidExt := false
-				for _, validExt := range validExts {
-					if ext == validExt {
-						isValidExt = true
-						break
-					}
-				}
-
-				if !isValidExt && ext != "" {
+				if !validExts[ext] && ext != "" {
 					continue
 				}
 
-				debounceTimer.Reset(500 * time.Millisecond)
+				if !isRebuilding.CompareAndSwap(false, true) {
+					continue
+				}
+
 				go func(eventName string) {
 					defer func() {
+						isRebuilding.Store(false)
 						if r := recover(); r != nil {
 							log.Printf("Failed to handle file change: %v", r)
 						}
 					}()
 
-					<-debounceTimer.C
-					fmt.Printf("\nFile changed: %s\n", eventName)
-					fmt.Println("Rebuilding project...")
+					fmt.Printf("\nFile changed: %s\nRebuilding project...\n", eventName)
 
 					// 停止當前進程
 					select {
-					case currentCmd := <-processChannel:
+					case cmd := <-processChannel:
+						currentCmd = cmd
 						if currentCmd != nil && currentCmd.Process != nil {
 							_ = currentCmd.Process.Kill()
 							_ = currentCmd.Wait()
 						}
 					default:
-						// 如果沒有正在運行的進程，直接繼續
 					}
 
-					// 重新啟動
 					startAndMonitor()
 				}(event.Name)
 			}
