@@ -10,7 +10,6 @@ import (
 	"strings"
 	"sync/atomic"
 
-	"github.com/TimLai666/golte-cli/build"
 	"github.com/fsnotify/fsnotify"
 )
 
@@ -29,11 +28,6 @@ func WatchAndRebuild(projectPath, projectName string, startApp func(projectPath,
 	isRebuilding := atomic.Bool{}
 
 	startAndMonitor := func() bool {
-		if !build.BuildProject(projectPath, projectName) {
-			log.Println("Build failed, waiting for next file change...")
-			return false
-		}
-
 		cmd := startApp(projectPath, projectName)
 		if cmd == nil {
 			log.Println("Failed to start app, waiting for next file change...")

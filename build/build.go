@@ -9,6 +9,7 @@ import (
 )
 
 func BuildProject(projectPath string, projectName string) bool {
+	log.Println("Starting frontend build...")
 	// build frontend
 	cmd := exec.Command("npx", "golte")
 	cmd.Dir = projectPath
@@ -16,7 +17,9 @@ func BuildProject(projectPath string, projectName string) bool {
 		log.Printf("Failed to build frontend: %v\n%s", err, output)
 		return false
 	}
+	log.Println("Frontend build completed")
 
+	log.Println("Starting backend build...")
 	// tidy go mod
 	cmd = exec.Command("go", "mod", "tidy")
 	cmd.Dir = projectPath
@@ -38,6 +41,7 @@ func BuildProject(projectPath string, projectName string) bool {
 		log.Printf("Failed to build project: %v\n%s", err, output)
 		return false
 	}
+	log.Println("Backend build completed")
 
 	return true
 }
