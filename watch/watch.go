@@ -22,10 +22,49 @@ func WatchAndRebuild(projectPath, projectName string, startApp func(projectPath,
 		configPath: filepath.Join(projectPath, "golte.config.ts"),
 	}
 
-	// 使用指標預先分配一個 cmd
 	var currentCmd *exec.Cmd
 	processChannel := make(chan *exec.Cmd, 1)
 	isRebuilding := atomic.Bool{}
+
+	setupWatchers := func(watcher *fsnotify.Watcher) error {
+		for _, watchPath := range watcher.WatchList() {
+			watcher.Remove(watchPath)
+		}
+
+		dirsNotToWatch := []string{"node_modules", "dist", ".git", "build"}
+		var dirsToWatch []string
+
+		err := filepath.Walk(projectPath, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+
+			if info.IsDir() {
+				baseName := info.Name()
+				if slices.Contains(dirsNotToWatch, baseName) {
+					fmt.Printf("Skipping directory: %s\n", path)
+					return filepath.SkipDir
+				}
+				dirsToWatch = append(dirsToWatch, path)
+			}
+			return nil
+		})
+
+		if err != nil {
+			return fmt.Errorf("error walking directory tree: %v", err)
+		}
+
+		for _, dir := range dirsToWatch {
+			err = watcher.Add(dir)
+			if err != nil {
+				log.Printf("Error adding watcher for %s: %v", dir, err)
+			} else {
+				fmt.Printf("Watching directory: %s\n", dir)
+			}
+		}
+
+		return watcher.Add(paths.configPath)
+	}
 
 	startAndMonitor := func() bool {
 		cmd := startApp(projectPath, projectName, isSveltigo)
@@ -34,13 +73,11 @@ func WatchAndRebuild(projectPath, projectName string, startApp func(projectPath,
 			return false
 		}
 
-		// 更新當前進程指標
 		currentCmd = cmd
 		processChannel <- cmd
 		return true
 	}
 
-	// 首次啟動
 	startAndMonitor()
 
 	fmt.Println("Running the project, and watching for changes...")
@@ -51,45 +88,10 @@ func WatchAndRebuild(projectPath, projectName string, startApp func(projectPath,
 	}
 	defer watcher.Close()
 
-	// 監控目錄設置
-	dirsNotToWatch := []string{"node_modules", "dist", ".git", "build"}
-	var dirsToWatch []string
-
-	err = filepath.Walk(projectPath, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		// 檢查是否應該跳過此目錄
-		if info.IsDir() {
-			baseName := info.Name()
-			if slices.Contains(dirsNotToWatch, baseName) {
-				fmt.Printf("Skipping directory: %s\n", path)
-				return filepath.SkipDir
-			}
-			dirsToWatch = append(dirsToWatch, path)
-		}
-		return nil
-	})
-
-	if err != nil {
-		log.Printf("Error walking directory tree: %v", err)
+	if err := setupWatchers(watcher); err != nil {
+		log.Printf("Initial watcher setup failed: %v", err)
 	}
 
-	// 為每個要監控的目錄添加監控
-	for _, dir := range dirsToWatch {
-		err = watcher.Add(dir)
-		if err != nil {
-			log.Printf("Error adding watcher for %s: %v", dir, err)
-		} else {
-			fmt.Printf("Watching directory: %s\n", dir)
-		}
-	}
-
-	// 使用預計算的路徑
-	watcher.Add(paths.configPath)
-
-	// 預編譯正則表達式和預先計算的映射來加速檢查
 	ignorePaths := map[string]bool{
 		"node_modules": true,
 		"dist":         true,
@@ -113,9 +115,7 @@ func WatchAndRebuild(projectPath, projectName string, startApp func(projectPath,
 		"~":     true,
 	}
 
-	// 優化 shouldIgnorePath 函數
 	shouldIgnorePath := func(path string) bool {
-		// 直接檢查完整路徑名稱
 		for ignorePath := range ignorePaths {
 			if strings.Contains(path, ignorePath) {
 				return true
@@ -134,7 +134,6 @@ func WatchAndRebuild(projectPath, projectName string, startApp func(projectPath,
 			}
 
 			if event.Op&(fsnotify.Write|fsnotify.Create|fsnotify.Remove|fsnotify.Rename) != 0 {
-				// 使用 map 加速副檔名檢查
 				ext := filepath.Ext(event.Name)
 				if !validExts[ext] && ext != "" {
 					continue
@@ -154,7 +153,6 @@ func WatchAndRebuild(projectPath, projectName string, startApp func(projectPath,
 
 					fmt.Printf("\nFile changed: %s\nRebuilding project...\n", eventName)
 
-					// 停止當前進程
 					select {
 					case cmd := <-processChannel:
 						currentCmd = cmd
@@ -163,6 +161,10 @@ func WatchAndRebuild(projectPath, projectName string, startApp func(projectPath,
 							_ = currentCmd.Wait()
 						}
 					default:
+					}
+
+					if err := setupWatchers(watcher); err != nil {
+						log.Printf("Failed to reset watchers: %v", err)
 					}
 
 					startAndMonitor()
