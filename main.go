@@ -43,9 +43,9 @@ func main() {
 }
 
 // 定義啟動應用程序的函數
-var startApp = func(projectPath, projectName string) *exec.Cmd {
+var startApp = func(projectPath, projectName string, isSveltigo bool) *exec.Cmd {
 	// 如果構建失敗，返回 nil
-	if !build.BuildProject(projectPath, projectName) {
+	if !build.BuildProject(projectPath, projectName, isSveltigo) {
 		return nil
 	}
 	cmd := exec.Command(filepath.Join("dist", projectName))
@@ -66,8 +66,9 @@ var newCmd = &cobra.Command{
 		projectName := args[0]
 		fmt.Println("Creating project, please wait...")
 		inCurrentDir := cmd.Flag("here").Value.String() == "true"
+		isSveltigo := cmd.Flag("sveltigo").Value.String() == "true"
 		create.CreateProject(projectName, templates, inCurrentDir)
-		build.BuildProject(projectName, projectName)
+		build.BuildProject(projectName, projectName, isSveltigo)
 		fmt.Printf("Project '%s' created successfully!\n", projectName)
 	},
 }
@@ -82,7 +83,8 @@ var buildCmd = &cobra.Command{
 		}
 		projectName := filepath.Base(projectPath)
 		fmt.Println("Building the project...")
-		build.BuildProject(projectPath, projectName)
+		isSveltigo := cmd.Flag("sveltigo").Value.String() == "true"
+		build.BuildProject(projectPath, projectName, isSveltigo)
 	},
 }
 
@@ -96,7 +98,8 @@ var runCmd = &cobra.Command{
 		}
 		projectName := filepath.Base(projectPath)
 		fmt.Println("Building the project...")
-		build.BuildProject(projectPath, projectName)
+		isSveltigo := cmd.Flag("sveltigo").Value.String() == "true"
+		build.BuildProject(projectPath, projectName, isSveltigo)
 		fmt.Println("Running the project...")
 
 		// 創建一個新的命令
@@ -123,7 +126,7 @@ var devCmd = &cobra.Command{
 			log.Fatalf("Failed to get current directory: %v", err)
 		}
 		projectName := filepath.Base(projectPath)
-
-		watch.WatchAndRebuild(projectPath, projectName, startApp)
+		isSveltigo := cmd.Flag("sveltigo").Value.String() == "true"
+		watch.WatchAndRebuild(projectPath, projectName, startApp, isSveltigo)
 	},
 }

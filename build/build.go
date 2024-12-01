@@ -8,7 +8,7 @@ import (
 	"runtime"
 )
 
-func BuildProject(projectPath string, projectName string) bool {
+func BuildProject(projectPath string, projectName string, isSveltigo bool) bool {
 	log.Println("Starting frontend build...")
 	// build frontend
 	cmd := exec.Command("npx", "golte")
@@ -16,6 +16,9 @@ func BuildProject(projectPath string, projectName string) bool {
 	if output, err := cmd.CombinedOutput(); err != nil {
 		log.Printf("Failed to build frontend: %v\n%s", err, output)
 		return false
+	}
+	if isSveltigo {
+		changeSveltigoMiddlewareFile(projectPath)
 	}
 	log.Println("Frontend build completed")
 

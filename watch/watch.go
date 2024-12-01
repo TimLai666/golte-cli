@@ -17,7 +17,7 @@ type watchPaths struct {
 	configPath string
 }
 
-func WatchAndRebuild(projectPath, projectName string, startApp func(projectPath, projectName string) *exec.Cmd) {
+func WatchAndRebuild(projectPath, projectName string, startApp func(projectPath, projectName string, isSveltigo bool) *exec.Cmd, isSveltigo bool) {
 	paths := &watchPaths{
 		configPath: filepath.Join(projectPath, "golte.config.ts"),
 	}
@@ -28,7 +28,7 @@ func WatchAndRebuild(projectPath, projectName string, startApp func(projectPath,
 	isRebuilding := atomic.Bool{}
 
 	startAndMonitor := func() bool {
-		cmd := startApp(projectPath, projectName)
+		cmd := startApp(projectPath, projectName, isSveltigo)
 		if cmd == nil {
 			log.Println("Failed to start app, waiting for next file change...")
 			return false
