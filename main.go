@@ -21,6 +21,12 @@ var templates embed.FS
 func init() {
 	// 添加 here flag
 	newCmd.Flags().Bool("here", false, "Create project in current directory")
+
+	// 為需要的命令添加 sveltigo flag 及其別名
+	newCmd.Flags().BoolP("sveltigo", "sg", false, "Create a Sveltigo project")
+	buildCmd.Flags().BoolP("sveltigo", "sg", false, "Build as a Sveltigo project")
+	runCmd.Flags().BoolP("sveltigo", "sg", false, "Run as a Sveltigo project")
+	devCmd.Flags().BoolP("sveltigo", "sg", false, "Dev mode for a Sveltigo project")
 }
 
 func main() {
