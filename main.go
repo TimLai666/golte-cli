@@ -83,10 +83,13 @@ var newCmd = &cobra.Command{
 		isSveltigo := cmd.Flag("sveltigo").Value.String() == "true"
 		create.CreateProject(projectName, templates, inCurrentDir, bunPath)
 		var projectPath string
-		if inCurrentDir {
-			projectPath = "."
-		} else {
-			projectPath = filepath.Join("./", projectName)
+		var err error
+		projectPath, err = os.Getwd()
+		if err != nil {
+			log.Fatalf("Failed to get current directory: %v", err)
+		}
+		if !inCurrentDir {
+			projectPath = filepath.Join(projectPath, projectName)
 		}
 		build.BuildProject(projectPath, projectName, isSveltigo, bunPath)
 		fmt.Printf("Project '%s' created successfully!\n", projectName)
