@@ -53,12 +53,12 @@ import (
 
 	"{{projectName}}/build"
 
+	"github.com/HazelnutParadise/sveltigo"
 	"github.com/gin-gonic/gin"
-	"github.com/nichady/golte"
 )
 
 func wrapMiddleware(middleware *func(http.Handler) http.Handler, ctx *gin.Context) {
-	if golte.GetRenderContext(func() *http.Request {
+	if sveltigo.GetRenderContext(func() *http.Request {
 		(*middleware)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx.Request = r
 			ctx.Next()

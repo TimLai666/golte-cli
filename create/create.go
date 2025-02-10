@@ -42,6 +42,12 @@ func CreateProject(projectName string, templates embed.FS, inCurrentDir bool, is
 		log.Fatalf("Failed to write main.go file: %v", err)
 	}
 
+	// make router directory
+	err = os.MkdirAll(filepath.Join(projectPath, "router"), 0755)
+	if err != nil {
+		log.Fatalf("Failed to create router directory: %v", err)
+	}
+
 	// put router.go content
 	var ginContent string
 	if isSveltigo {
@@ -50,6 +56,18 @@ func CreateProject(projectName string, templates embed.FS, inCurrentDir bool, is
 		ginContent = strings.Replace(ginContentTemplate, "{{projectName}}", projectName, -1)
 	}
 	err = os.WriteFile(filepath.Join(projectPath, "router", "router.go"), []byte(ginContent), 0644)
+	if err != nil {
+		log.Fatalf("Failed to write router.go file: %v", err)
+	}
+
+	// put defineRoutes.go content
+	var defineRoutesContentStr string
+	if isSveltigo {
+		defineRoutesContentStr = strings.Replace(defineRoutesSveltigoContent, "{{projectName}}", projectName, -1)
+	} else {
+		defineRoutesContentStr = strings.Replace(defineRoutesContent, "{{projectName}}", projectName, -1)
+	}
+	err = os.WriteFile(filepath.Join(projectPath, "router", "defineRoutes.go"), []byte(defineRoutesContentStr), 0644)
 	if err != nil {
 		log.Fatalf("Failed to write router.go file: %v", err)
 	}
