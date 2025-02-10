@@ -11,7 +11,10 @@ import (
 	"strings"
 )
 
-func CreateProject(projectName string, templates embed.FS, inCurrentDir bool) {
+func CreateProject(projectName string, templates embed.FS, inCurrentDir bool, bunPath string) {
+	if bunPath == "" {
+		bunPath = "bun"
+	}
 	var projectPath string
 	if inCurrentDir {
 		projectPath = "."
@@ -61,7 +64,7 @@ func CreateProject(projectName string, templates embed.FS, inCurrentDir bool) {
 	}
 
 	// Run bun init
-	bunCmd := exec.Command("bun", "init", "-y")
+	bunCmd := exec.Command(bunPath, "init", "-y")
 	bunCmd.Dir = projectPath
 	if output, err := bunCmd.CombinedOutput(); err != nil {
 		log.Fatalf("Failed to initialize bun: %v\n%s", err, output)
@@ -82,7 +85,7 @@ func CreateProject(projectName string, templates embed.FS, inCurrentDir bool) {
 	}
 
 	// Install bun package
-	bunInstallCmd := exec.Command("bun", "install", "golte@latest")
+	bunInstallCmd := exec.Command(bunPath, "install", "golte@latest")
 	bunInstallCmd.Dir = projectPath
 	if output, err := bunInstallCmd.CombinedOutput(); err != nil {
 		log.Fatalf("Failed to install bun package: %v\n%s", err, output)

@@ -8,10 +8,10 @@ import (
 	"runtime"
 )
 
-func BuildProject(projectPath string, projectName string, isSveltigo bool) bool {
+func BuildProject(projectPath string, projectName string, isSveltigo bool, bunPath string) bool {
 	log.Println("Starting frontend build...")
 	// build frontend
-	cmd := exec.Command("bunx", "golte")
+	cmd := exec.Command(bunPath, "x", "golte")
 	cmd.Dir = projectPath
 	if output, err := cmd.CombinedOutput(); err != nil {
 		log.Printf("Failed to build frontend: %v\n%s", err, output)

@@ -18,9 +18,14 @@ import (
 
 //go:embed templates/*
 var templates embed.FS
+var bunPath string
 
 func init() {
-	install.InstallBun()
+	var err error
+	bunPath, err = install.InstallBun()
+	if err != nil {
+		log.Fatalf("Failed to install Bun: %v", err)
+	}
 
 	// 添加 here flag
 	newCmd.Flags().Bool("here", false, "Create project in current directory")
@@ -54,7 +59,7 @@ func main() {
 // 定義啟動應用程序的函數
 var startApp = func(projectPath, projectName string, isSveltigo bool) *exec.Cmd {
 	// 如果構建失敗，返回 nil
-	if !build.BuildProject(projectPath, projectName, isSveltigo) {
+	if !build.BuildProject(projectPath, projectName, isSveltigo, bunPath) {
 		return nil
 	}
 	cmd := exec.Command(filepath.Join("dist", projectName))
@@ -76,8 +81,8 @@ var newCmd = &cobra.Command{
 		fmt.Println("Creating project, please wait...")
 		inCurrentDir := cmd.Flag("here").Value.String() == "true"
 		isSveltigo := cmd.Flag("sveltigo").Value.String() == "true"
-		create.CreateProject(projectName, templates, inCurrentDir)
-		build.BuildProject(projectName, projectName, isSveltigo)
+		create.CreateProject(projectName, templates, inCurrentDir, bunPath)
+		build.BuildProject(projectName, projectName, isSveltigo, bunPath)
 		fmt.Printf("Project '%s' created successfully!\n", projectName)
 	},
 }
@@ -93,7 +98,7 @@ var buildCmd = &cobra.Command{
 		projectName := filepath.Base(projectPath)
 		fmt.Println("Building the project...")
 		isSveltigo := cmd.Flag("sveltigo").Value.String() == "true"
-		build.BuildProject(projectPath, projectName, isSveltigo)
+		build.BuildProject(projectPath, projectName, isSveltigo, bunPath)
 	},
 }
 
@@ -108,7 +113,7 @@ var runCmd = &cobra.Command{
 		projectName := filepath.Base(projectPath)
 		fmt.Println("Building the project...")
 		isSveltigo := cmd.Flag("sveltigo").Value.String() == "true"
-		build.BuildProject(projectPath, projectName, isSveltigo)
+		build.BuildProject(projectPath, projectName, isSveltigo, bunPath)
 		fmt.Println("Running the project...")
 
 		// 創建一個新的命令
