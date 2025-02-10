@@ -9,13 +9,20 @@ import (
 )
 
 func InstallBun() (bunPath string, err error) {
-	if hasBunInstalled() {
-		return "", nil
+	// 檢查是否已安裝
+	if path := getBunPath(); path != "" {
+		return path, nil
 	}
+
 	var cmd *exec.Cmd
 	switch runtime.GOOS {
 	case "windows":
 		cmd = exec.Command("powershell", "-c", "irm bun.sh/install.ps1 | iex")
+		err = cmd.Run()
+		if err != nil {
+			return "", fmt.Errorf("failed to install bun: %v", err)
+		}
+		return getBunPath(), nil
 	case "linux", "darwin":
 		path := findBunInUnix()
 		if path != "" {
@@ -23,30 +30,39 @@ func InstallBun() (bunPath string, err error) {
 			return path, nil
 		}
 		cmd = exec.Command("bash", "-c", "curl -fsSL https://bun.sh/install | bash")
-		err := cmd.Run()
+		err = cmd.Run()
 		if err != nil {
-			return "", err
+			return "", fmt.Errorf("failed to install bun: %v", err)
 		}
 		return findBunInUnix(), nil
-
+	default:
+		return "", fmt.Errorf("unsupported operating system: %s", runtime.GOOS)
 	}
-	err = cmd.Run()
-	return "", err
 }
 
-func hasBunInstalled() bool {
-	cmd := exec.Command("bun", "--version")
-	err := cmd.Run()
-	return err == nil
+func getBunPath() string {
+	var cmd *exec.Cmd
+	if runtime.GOOS == "windows" {
+		cmd = exec.Command("where", "bun.exe")
+	} else {
+		cmd = exec.Command("which", "bun")
+	}
+	output, err := cmd.Output()
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(string(output))
 }
 
 func findBunInUnix() (path string) {
 	homeDir := os.Getenv("HOME")
+	if homeDir == "" {
+		return ""
+	}
 	cmd := exec.Command("find", homeDir, "-name", "bun", "-type", "f")
 	b, err := cmd.Output()
 	if err != nil {
 		return ""
 	}
-	// 移除結尾的換行符號
 	return strings.TrimSpace(string(b))
 }
