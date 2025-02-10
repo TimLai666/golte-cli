@@ -82,7 +82,13 @@ var newCmd = &cobra.Command{
 		inCurrentDir := cmd.Flag("here").Value.String() == "true"
 		isSveltigo := cmd.Flag("sveltigo").Value.String() == "true"
 		create.CreateProject(projectName, templates, inCurrentDir, bunPath)
-		build.BuildProject(projectName, projectName, isSveltigo, bunPath)
+		var projectPath string
+		if inCurrentDir {
+			projectPath = "."
+		} else {
+			projectPath = filepath.Join("./", projectName)
+		}
+		build.BuildProject(projectPath, projectName, isSveltigo, bunPath)
 		fmt.Printf("Project '%s' created successfully!\n", projectName)
 	},
 }
