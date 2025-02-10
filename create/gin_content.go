@@ -84,7 +84,7 @@ func GinRouter() http.Handler {
 	r := gin.Default()
 	// register the main Golte middleware
 	r.Use(func(ctx *gin.Context) {
-		wrapMiddleware(&build.Golte, ctx)
+		wrapMiddleware(&build.Sveltigo, ctx)
 	})
 
 	defineRoutes(r)
