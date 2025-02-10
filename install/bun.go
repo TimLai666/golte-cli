@@ -1,6 +1,7 @@
 package install
 
 import (
+	"fmt"
 	"os/exec"
 	"runtime"
 )
@@ -16,6 +17,7 @@ func InstallBun() (bunPath string, err error) {
 	case "linux", "darwin":
 		path := findBunInUnix()
 		if path != "" {
+			fmt.Println("Bun already installed at", path)
 			return path, nil
 		}
 		cmd = exec.Command("bash", "-c", "curl -fsSL https://bun.sh/install | bash")
