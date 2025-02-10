@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func CreateProject(projectName string, templates embed.FS, inCurrentDir bool, bunPath string) {
+func CreateProject(projectName string, templates embed.FS, inCurrentDir bool, isSveltigo bool, bunPath string) {
 	if bunPath == "" {
 		bunPath = "bun"
 	}
@@ -43,7 +43,12 @@ func CreateProject(projectName string, templates embed.FS, inCurrentDir bool, bu
 	}
 
 	// put router.go content
-	ginContent := strings.Replace(ginContentTemplate, "{{projectName}}", projectName, -1)
+	var ginContent string
+	if isSveltigo {
+		ginContent = strings.Replace(ginContentTemplate_sveltigo, "{{projectName}}", projectName, -1)
+	} else {
+		ginContent = strings.Replace(ginContentTemplate, "{{projectName}}", projectName, -1)
+	}
 	err = os.WriteFile(filepath.Join(projectPath, "router", "router.go"), []byte(ginContent), 0644)
 	if err != nil {
 		log.Fatalf("Failed to write router.go file: %v", err)

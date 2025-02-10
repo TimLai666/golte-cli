@@ -81,7 +81,7 @@ var newCmd = &cobra.Command{
 		fmt.Println("Creating project, please wait...")
 		inCurrentDir := cmd.Flag("here").Value.String() == "true"
 		isSveltigo := cmd.Flag("sveltigo").Value.String() == "true"
-		create.CreateProject(projectName, templates, inCurrentDir, bunPath)
+		create.CreateProject(projectName, templates, inCurrentDir, isSveltigo, bunPath)
 		var projectPath string
 		var err error
 		projectPath, err = os.Getwd()
