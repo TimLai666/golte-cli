@@ -2,8 +2,10 @@ package install
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"runtime"
+	"strings"
 )
 
 func InstallBun() (bunPath string, err error) {
@@ -39,14 +41,12 @@ func hasBunInstalled() bool {
 }
 
 func findBunInUnix() (path string) {
-	cmd := exec.Command("find", "$HOME", "-name", "bun", "-type", "f")
-	err := cmd.Run()
-	if err != nil {
-		return ""
-	}
+	homeDir := os.Getenv("HOME")
+	cmd := exec.Command("find", homeDir, "-name", "bun", "-type", "f")
 	b, err := cmd.Output()
 	if err != nil {
 		return ""
 	}
-	return string(b)
+	// 移除結尾的換行符號
+	return strings.TrimSpace(string(b))
 }
