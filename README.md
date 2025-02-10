@@ -2,10 +2,20 @@
 
 Golte CLI is a command-line tool for building and running [Golte](https://github.com/nichady/golte) projects.
 
+Golte CLI uses Bun instead of Node.js to provide a faster and more efficient development experience.
+
 ## Installation
 
 ```bash
 go install github.com/TimLai666/golte-cli@latest
+```
+
+## Sveltigo Supports
+
+For Sveltigo, just add `--sveltigo` to the command.
+
+```bash
+golte-cli new <project-name> --sveltigo
 ```
 
 ## Usage
