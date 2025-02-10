@@ -60,11 +60,11 @@ func CreateProject(projectName string, templates embed.FS, inCurrentDir bool) {
 		log.Fatalf("Failed to initialize Go module: %v\n%s", err, output)
 	}
 
-	// Run npm init
-	npmCmd := exec.Command("npm", "init", "-y")
-	npmCmd.Dir = projectPath
-	if output, err := npmCmd.CombinedOutput(); err != nil {
-		log.Fatalf("Failed to initialize npm: %v\n%s", err, output)
+	// Run bun init
+	bunCmd := exec.Command("bun", "init", "-y")
+	bunCmd.Dir = projectPath
+	if output, err := bunCmd.CombinedOutput(); err != nil {
+		log.Fatalf("Failed to initialize bun: %v\n%s", err, output)
 	}
 
 	// Get Gin package
@@ -81,17 +81,17 @@ func CreateProject(projectName string, templates embed.FS, inCurrentDir bool) {
 		log.Fatalf("Failed to get Golte package: %v\n%s", err, output)
 	}
 
-	// Install npm package
-	npmInstallCmd := exec.Command("npm", "install", "golte@latest")
-	npmInstallCmd.Dir = projectPath
-	if output, err := npmInstallCmd.CombinedOutput(); err != nil {
-		log.Fatalf("Failed to install npm package: %v\n%s", err, output)
+	// Install bun package
+	bunInstallCmd := exec.Command("bun", "install", "golte@latest")
+	bunInstallCmd.Dir = projectPath
+	if output, err := bunInstallCmd.CombinedOutput(); err != nil {
+		log.Fatalf("Failed to install bun package: %v\n%s", err, output)
 	}
 
-	// npmInstallCmd = exec.Command("npm", "install", "svelte@latest")
-	// npmInstallCmd.Dir = projectPath
-	// if output, err := npmInstallCmd.CombinedOutput(); err != nil {
-	// 	log.Fatalf("Failed to install npm package: %v\n%s", err, output)
+	// bunInstallCmd = exec.Command("bun", "install", "svelte@latest")
+	// bunInstallCmd.Dir = projectPath
+	// if output, err := bunInstallCmd.CombinedOutput(); err != nil {
+	// 	log.Fatalf("Failed to install bun package: %v\n%s", err, output)
 	// }
 }
 

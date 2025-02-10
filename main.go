@@ -12,6 +12,7 @@ import (
 
 	"github.com/TimLai666/golte-cli/build"
 	"github.com/TimLai666/golte-cli/create"
+	"github.com/TimLai666/golte-cli/install"
 	"github.com/TimLai666/golte-cli/watch"
 )
 
@@ -19,6 +20,8 @@ import (
 var templates embed.FS
 
 func init() {
+	install.InstallBun()
+
 	// 添加 here flag
 	newCmd.Flags().Bool("here", false, "Create project in current directory")
 
