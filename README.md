@@ -12,7 +12,7 @@ go install github.com/TimLai666/golte-cli@latest
 
 ## Sveltigo Supports
 
-For [Sveltigo](https://github.com/HazelnutParadise/sveltigo), just add `--sveltigo` to the command.
+For [Sveltigo](https://github.com/HazelnutParadise/sveltigo), just add `--sveltigo` to `new`, `build` or `dev` command.
 
 ```bash
 golte-cli new <project-name> --sveltigo
